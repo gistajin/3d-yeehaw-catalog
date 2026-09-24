@@ -138,13 +138,17 @@ function cardHtml(m, inGroup) {
   const title = inGroup
     ? (m.variant || m.displayName)
     : (m.variant ? `${m.displayName} — ${m.variant}` : m.displayName);
+  const infoHtml = m.license ? `<div class="info-wrap">
+        <button class="info-icon" onclick="event.stopPropagation()" aria-label="License info">i</button>
+        <div class="info-tooltip">${esc(m.license)}</div>
+      </div>` : '';
   return `<div class="catalog-card">
       <div class="catalog-card-photo">
         ${img ? `<img src="${esc(img)}" alt="${escAttr(title)}" class="photo-clickable" onclick="openLightboxFor('${escAttr(m.id)}')">` : `<div class="catalog-card-noimg">No photo</div>`}
+        ${infoHtml}
       </div>
       <div class="catalog-card-body">
         <div class="catalog-card-title">${esc(title)}</div>
-        ${m.license ? `<div class="catalog-card-credit">${esc(m.license)}</div>` : ''}
       </div>
     </div>`;
 }
