@@ -24,6 +24,7 @@ const Sheets = {
     return (Array.isArray(rows) ? rows : []).map(r => ({
       id: String(r.id || ''),
       model: String(r.model || ''),
+      displayName: String(r.displayName || r.model || ''),
       variant: String(r.variant || ''),
       photo: String(r.photo || ''),
       photoFullUrl: String(r.photoFullUrl || ''),
