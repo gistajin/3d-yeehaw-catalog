@@ -22,7 +22,7 @@
     <img src="logo.svg" class="logo-mark" alt="3D Yeehaw">
     <div class="header-titles">
       <h1>3D Yeehaw</h1>
-      <p>Models we can print</p>
+      <p>We don't just print, we YEEHAW!</p>
     </div>
   </div>
   <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode">
@@ -44,7 +44,10 @@
 <footer>3D Yeehaw</footer>
 
 <div id="lightbox" class="lightbox hidden" onclick="closeLightbox()">
+  <button class="lightbox-nav lightbox-prev hidden" onclick="event.stopPropagation(); lightboxPrev()" aria-label="Previous photo">&#10094;</button>
   <img id="lightbox-img" alt="">
+  <button class="lightbox-nav lightbox-next hidden" onclick="event.stopPropagation(); lightboxNext()" aria-label="Next photo">&#10095;</button>
+  <div id="lightbox-counter" class="lightbox-counter hidden"></div>
 </div>
 
 <script src="js/config.js"></script>
