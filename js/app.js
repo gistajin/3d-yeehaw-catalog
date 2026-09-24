@@ -121,10 +121,16 @@ function render() {
 function groupCardHtml(g) {
   const photoItem = g.items.find(m => m.photoFullUrl || m.photo);
   const img = photoItem ? (photoItem.photoFullUrl || photoItem.photo) : '';
+  const licenses = [...new Set(g.items.map(m => m.license).filter(Boolean))];
+  const infoHtml = licenses.length ? `<div class="info-wrap">
+        <button class="info-icon" onclick="event.stopPropagation()" aria-label="License info">i</button>
+        <div class="info-tooltip">${esc(licenses.join(' • '))}</div>
+      </div>` : '';
   return `<div class="catalog-card group-card" onclick="openGroup('${esc(g.model).replace(/'/g, "\\'")}')">
       <div class="catalog-card-photo">
         ${img ? `<img src="${esc(img)}" alt="${escAttr(g.model)}">` : `<div class="catalog-card-noimg">No photo</div>`}
         <span class="variant-count-badge">${g.items.length} variants</span>
+        ${infoHtml}
       </div>
       <div class="catalog-card-body">
         <div class="catalog-card-title">${esc(g.model)}</div>
