@@ -140,7 +140,7 @@ function cardHtml(m, inGroup) {
     : (m.variant ? `${m.displayName} — ${m.variant}` : m.displayName);
   return `<div class="catalog-card">
       <div class="catalog-card-photo">
-        ${img ? `<img src="${esc(img)}" alt="${escAttr(title)}" class="photo-clickable" onclick="openLightbox('${lightboxSrc(m)}')">` : `<div class="catalog-card-noimg">No photo</div>`}
+        ${img ? `<img src="${esc(img)}" alt="${escAttr(title)}" class="photo-clickable" onclick="openLightboxFor('${escAttr(m.id)}')">` : `<div class="catalog-card-noimg">No photo</div>`}
       </div>
       <div class="catalog-card-body">
         <div class="catalog-card-title">${esc(title)}</div>
@@ -149,19 +149,62 @@ function cardHtml(m, inGroup) {
     </div>`;
 }
 
-function lightboxSrc(m) {
-  return escAttr(m.photoFullUrl || m.photo).replace(/'/g, "\\'");
+// ---- Photo lightbox / carousel ----
+
+let lightboxPhotos = [];
+let lightboxIndex = 0;
+
+function photosFor(m) {
+  const list = [];
+  const cover = m.photoFullUrl || m.photo;
+  if (cover) list.push(cover);
+  (m.galleryUrls || []).forEach(u => { if (u && !list.includes(u)) list.push(u); });
+  return list;
 }
 
-function openLightbox(src) {
-  document.getElementById('lightbox-img').src = src;
+function openLightboxFor(id) {
+  const m = models.find(x => x.id === id);
+  if (!m) return;
+  lightboxPhotos = photosFor(m);
+  if (!lightboxPhotos.length) return;
+  lightboxIndex = 0;
+  showLightboxPhoto();
   document.getElementById('lightbox').classList.remove('hidden');
+}
+
+function showLightboxPhoto() {
+  document.getElementById('lightbox-img').src = lightboxPhotos[lightboxIndex] || '';
+  const multi = lightboxPhotos.length > 1;
+  document.querySelectorAll('.lightbox-nav').forEach(b => b.classList.toggle('hidden', !multi));
+  const counter = document.getElementById('lightbox-counter');
+  counter.classList.toggle('hidden', !multi);
+  if (multi) counter.textContent = `${lightboxIndex + 1} / ${lightboxPhotos.length}`;
+}
+
+function lightboxPrev() {
+  if (!lightboxPhotos.length) return;
+  lightboxIndex = (lightboxIndex - 1 + lightboxPhotos.length) % lightboxPhotos.length;
+  showLightboxPhoto();
+}
+
+function lightboxNext() {
+  if (!lightboxPhotos.length) return;
+  lightboxIndex = (lightboxIndex + 1) % lightboxPhotos.length;
+  showLightboxPhoto();
 }
 
 function closeLightbox() {
   document.getElementById('lightbox').classList.add('hidden');
   document.getElementById('lightbox-img').src = '';
+  lightboxPhotos = [];
 }
+
+document.addEventListener('keydown', (e) => {
+  if (document.getElementById('lightbox').classList.contains('hidden')) return;
+  if (e.key === 'ArrowLeft') lightboxPrev();
+  else if (e.key === 'ArrowRight') lightboxNext();
+  else if (e.key === 'Escape') closeLightbox();
+});
 
 function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function escAttr(s) { return esc(s).replace(/"/g, '&quot;'); }
