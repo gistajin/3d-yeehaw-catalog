@@ -4,6 +4,7 @@
 
 let models = [];
 let searchTerm = '';
+let groupFilter = null; // model name currently drilled into, or null for the top-level grid
 
 // ---- Theme (shared pattern with the internal app) ----
 
@@ -40,7 +41,6 @@ async function loadModels() {
   setLoading(true);
   try {
     models = await Sheets.publicModels(CONFIG.fairSheet);
-    models.sort((a, b) => a.sortOrder - b.sortOrder);
     render();
   } catch (e) {
     document.getElementById('catalog-grid').innerHTML =
@@ -59,11 +59,54 @@ function handleSearch(value) {
   render();
 }
 
+// ---- Grouping — models sharing the same internal name become one card
+// with a "N variants" badge, matching how they're grouped in Yeehaw HQ.
+
+function groupModels(items) {
+  const map = new Map();
+  items.forEach(m => {
+    const key = (m.model || '').trim();
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(m);
+  });
+  return Array.from(map.entries())
+    .map(([model, groupItems]) => ({
+      model,
+      items: groupItems.slice().sort((a, b) => a.sortOrder - b.sortOrder)
+    }))
+    .sort((a, b) => Math.min(...a.items.map(i => i.sortOrder)) - Math.min(...b.items.map(i => i.sortOrder)));
+}
+
+function openGroup(model) {
+  groupFilter = model;
+  render();
+}
+
+function closeGroup() {
+  groupFilter = null;
+  render();
+}
+
 function render() {
+  const breadcrumb = document.getElementById('catalog-breadcrumb');
   const grid = document.getElementById('catalog-grid');
+
+  if (groupFilter !== null) {
+    const group = groupModels(models).find(g => g.model === groupFilter);
+    if (!group) { groupFilter = null; return render(); }
+    breadcrumb.classList.remove('hidden');
+    breadcrumb.innerHTML = `<button class="btn-back" onclick="closeGroup()">&larr; Back to all models</button>
+      <div class="breadcrumb-title">${esc(group.model)} <span class="breadcrumb-meta">${group.items.length} variants</span></div>`;
+    grid.innerHTML = group.items.map(m => cardHtml(m, true)).join('');
+    return;
+  }
+
+  breadcrumb.classList.add('hidden');
   const filtered = models.filter(m => {
     if (!searchTerm) return true;
-    return m.model.toLowerCase().includes(searchTerm) || m.variant.toLowerCase().includes(searchTerm);
+    return m.model.toLowerCase().includes(searchTerm) ||
+      m.displayName.toLowerCase().includes(searchTerm) ||
+      m.variant.toLowerCase().includes(searchTerm);
   });
 
   if (!filtered.length) {
@@ -71,12 +114,30 @@ function render() {
     return;
   }
 
-  grid.innerHTML = filtered.map(cardHtml).join('');
+  const groups = groupModels(filtered);
+  grid.innerHTML = groups.map(g => g.items.length > 1 ? groupCardHtml(g) : cardHtml(g.items[0], false)).join('');
 }
 
-function cardHtml(m) {
+function groupCardHtml(g) {
+  const photoItem = g.items.find(m => m.photoFullUrl || m.photo);
+  const img = photoItem ? (photoItem.photoFullUrl || photoItem.photo) : '';
+  return `<div class="catalog-card group-card" onclick="openGroup('${esc(g.model).replace(/'/g, "\\'")}')">
+      <div class="catalog-card-photo">
+        ${img ? `<img src="${esc(img)}" alt="${escAttr(g.model)}">` : `<div class="catalog-card-noimg">No photo</div>`}
+        <span class="variant-count-badge">${g.items.length} variants</span>
+      </div>
+      <div class="catalog-card-body">
+        <div class="catalog-card-title">${esc(g.model)}</div>
+        <div class="group-hint">Click to view &rarr;</div>
+      </div>
+    </div>`;
+}
+
+function cardHtml(m, inGroup) {
   const img = m.photoFullUrl || m.photo;
-  const title = m.variant ? `${m.model} — ${m.variant}` : m.model;
+  const title = inGroup
+    ? (m.variant || m.displayName)
+    : (m.variant ? `${m.displayName} — ${m.variant}` : m.displayName);
   return `<div class="catalog-card">
       <div class="catalog-card-photo">
         ${img ? `<img src="${esc(img)}" alt="${escAttr(title)}" class="photo-clickable" onclick="openLightbox('${lightboxSrc(m)}')">` : `<div class="catalog-card-noimg">No photo</div>`}
