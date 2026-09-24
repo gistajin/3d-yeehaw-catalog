@@ -239,10 +239,60 @@ main {
   color: var(--text);
 }
 
-.catalog-card-credit {
-  margin-top: 4px;
+.info-wrap {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+}
+
+.info-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  font-size: 12px;
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.info-icon:hover, .info-icon:focus, .info-icon:active { background: rgba(0,0,0,0.85); }
+
+.info-tooltip {
+  position: absolute;
+  bottom: 30px;
+  right: 0;
+  width: max-content;
+  max-width: 220px;
+  background: var(--surface);
+  color: var(--text);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
   font-size: 11px;
-  color: var(--text-muted);
+  line-height: 1.4;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.15s, transform 0.15s;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.info-icon:hover + .info-tooltip,
+.info-icon:focus + .info-tooltip,
+.info-icon:active + .info-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .lightbox {
