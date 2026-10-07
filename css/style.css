@@ -278,6 +278,7 @@ main {
   padding: 8px 10px;
   font-size: 11px;
   line-height: 1.4;
+  white-space: pre-line;
   box-shadow: var(--shadow);
   opacity: 0;
   visibility: hidden;
