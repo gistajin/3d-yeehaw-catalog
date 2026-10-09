@@ -5,6 +5,7 @@
 let models = [];
 let searchTerm = '';
 let groupFilter = null; // model name currently drilled into, or null for the top-level grid
+let activeCategories = new Set(); // selected filter keys; empty = show everything
 
 // ---- Theme (shared pattern with the internal app) ----
 
@@ -87,9 +88,54 @@ function closeGroup() {
   render();
 }
 
+// ---- Category filters ----
+// A group's categories are the union of its variants' categories; a group with
+// none counts as 'misc'. Selecting several filters shows models in ANY of them.
+
+function groupCategories(g) {
+  const keys = new Set();
+  g.items.forEach(i => i.categories.forEach(k => keys.add(k)));
+  return keys.size ? keys : new Set(['misc']);
+}
+
+function toggleCategory(key) {
+  if (activeCategories.has(key)) activeCategories.delete(key);
+  else activeCategories.add(key);
+  groupFilter = null;
+  render();
+}
+
+function clearCategories() {
+  activeCategories.clear();
+  render();
+}
+
+function renderFilters() {
+  const layout = document.getElementById('catalog-layout');
+  const box = document.getElementById('catalog-filters');
+  const counts = {};
+  groupModels(models).forEach(g => groupCategories(g).forEach(k => { counts[k] = (counts[k] || 0) + 1; }));
+  const cats = CONFIG.categories.filter(c => counts[c.key]);
+
+  if (cats.length < 2) {
+    layout.classList.add('no-filters');
+    box.innerHTML = '';
+    return;
+  }
+  layout.classList.remove('no-filters');
+  box.innerHTML = '<div class="filters-title">Filter</div>' +
+    cats.map(c => {
+      const on = activeCategories.has(c.key);
+      return `<button class="filter-chip${on ? ' active' : ''}" aria-pressed="${on}" onclick="toggleCategory('${c.key}')">
+        <span>${esc(c.label)}</span><span class="filter-count">${counts[c.key]}</span></button>`;
+    }).join('') +
+    `<button class="filter-clear" onclick="clearCategories()"${activeCategories.size ? '' : ' disabled'}>Clear filters</button>`;
+}
+
 function render() {
   const breadcrumb = document.getElementById('catalog-breadcrumb');
   const grid = document.getElementById('catalog-grid');
+  renderFilters();
 
   if (groupFilter !== null) {
     const group = groupModels(models).find(g => g.model === groupFilter);
@@ -109,12 +155,16 @@ function render() {
       m.variant.toLowerCase().includes(searchTerm);
   });
 
-  if (!filtered.length) {
-    grid.innerHTML = `<div class="empty-state">${models.length ? 'No models match your search.' : 'No models to show yet.'}</div>`;
+  let groups = groupModels(filtered);
+  if (activeCategories.size) {
+    groups = groups.filter(g => Array.from(groupCategories(g)).some(k => activeCategories.has(k)));
+  }
+
+  if (!groups.length) {
+    grid.innerHTML = `<div class="empty-state">${models.length ? 'No models match your search or filters.' : 'No models to show yet.'}</div>`;
     return;
   }
 
-  const groups = groupModels(filtered);
   grid.innerHTML = groups.map(g => g.items.length > 1 ? groupCardHtml(g) : cardHtml(g.items[0], false)).join('');
 }
 
