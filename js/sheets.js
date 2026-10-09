@@ -29,6 +29,7 @@ const Sheets = {
       photo: String(r.photo || ''),
       photoFullUrl: String(r.photoFullUrl || ''),
       galleryUrls: String(r.photoGallery || '').split('\n').map(s => s.trim()).filter(Boolean),
+      categories: String(r.categories || '').split(',').map(s => s.trim()).filter(Boolean),
       license: String(r.license || ''),
       sortOrder: r.sortOrder === '' || r.sortOrder === undefined ? 0 : Number(r.sortOrder) || 0
     })).filter(r => r.id);
