@@ -106,6 +106,73 @@ main {
   margin-bottom: 1.5rem;
 }
 
+.catalog-layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.catalog-layout.no-filters { grid-template-columns: minmax(0, 1fr); }
+.catalog-layout.no-filters .catalog-filters { display: none; }
+
+.catalog-filters {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filters-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.filter-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-med);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.filter-chip:hover { border-color: var(--accent); }
+
+.filter-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.filter-count { font-size: 11px; opacity: 0.65; }
+
+.filter-clear {
+  margin-top: 2px;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border-med);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.filter-clear:hover:not(:disabled) { background: var(--bg); color: var(--text); }
+.filter-clear:disabled { opacity: 0.4; cursor: not-allowed; }
+
 #search {
   width: 100%;
   max-width: 360px;
@@ -363,3 +430,23 @@ footer {
   header { padding: 0 1rem; }
   main { padding: 1rem; }
 }
+
+@media (max-width: 800px) {
+  .catalog-layout { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+
+  .catalog-filters {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .catalog-filters::-webkit-scrollbar { display: none; }
+
+  .filters-title { display: none; }
+  .filter-chip { flex-shrink: 0; white-space: nowrap; }
+  .filter-chip .filter-count { margin-left: 2px; }
+  .filter-clear { flex-shrink: 0; margin-top: 0; white-space: nowrap; }
+}
+
