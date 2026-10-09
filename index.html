@@ -32,13 +32,19 @@
 </header>
 
 <main>
-  <div class="toolbar">
-    <input type="text" id="search" placeholder="Search models..." oninput="handleSearch(this.value)">
-  </div>
+  <div id="catalog-layout" class="catalog-layout no-filters">
+    <aside id="catalog-filters" class="catalog-filters" aria-label="Filter by category"></aside>
 
-  <div id="catalog-breadcrumb" class="catalog-breadcrumb hidden"></div>
-  <div id="catalog-loading">Loading models...</div>
-  <div id="catalog-grid" class="catalog-grid"></div>
+    <div class="catalog-content">
+      <div class="toolbar">
+        <input type="text" id="search" placeholder="Search models..." oninput="handleSearch(this.value)">
+      </div>
+
+      <div id="catalog-breadcrumb" class="catalog-breadcrumb hidden"></div>
+      <div id="catalog-loading">Loading models...</div>
+      <div id="catalog-grid" class="catalog-grid"></div>
+    </div>
+  </div>
 </main>
 
 <footer>3D Yeehaw</footer>
