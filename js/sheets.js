@@ -10,7 +10,7 @@ const Sheets = {
       const url = CONFIG.scriptUrl + '?' + Object.entries({ ...params, callback: cbName })
         .map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&');
       const script = document.createElement('script');
-      const timeout = setTimeout(() => { cleanup(); reject(new Error('Request timed out')); }, 15000);
+      const timeout = setTimeout(() => { cleanup(); reject(new Error('Request timed out')); }, 30000);
       window[cbName] = (data) => { cleanup(); if (data && data.status === 'error') reject(new Error(data.message)); else resolve(data); };
       function cleanup() { clearTimeout(timeout); delete window[cbName]; if (script.parentNode) script.parentNode.removeChild(script); }
       script.onerror = () => { cleanup(); reject(new Error('Script load failed')); };
