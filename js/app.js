@@ -6,6 +6,7 @@ let models = [];
 let searchTerm = '';
 let groupFilter = null; // model name currently drilled into, or null for the top-level grid
 let activeCategories = new Set(); // selected filter keys; empty = show everything
+let catalogCategories = CONFIG.categories; // replaced by the list from the sheet once loaded
 
 // ---- Theme (shared pattern with the internal app) ----
 
@@ -41,7 +42,12 @@ window.addEventListener('DOMContentLoaded', () => {
 async function loadModels() {
   setLoading(true);
   try {
-    models = await Sheets.publicModels(CONFIG.fairSheet);
+    const [loadedModels, loadedCategories] = await Promise.all([
+      Sheets.publicModels(CONFIG.fairSheet),
+      Sheets.publicCategories().catch(() => [])
+    ]);
+    models = loadedModels;
+    if (loadedCategories.length) catalogCategories = loadedCategories;
     render();
   } catch (e) {
     document.getElementById('catalog-grid').innerHTML =
@@ -93,8 +99,9 @@ function closeGroup() {
 // none counts as 'misc'. Selecting several filters shows models in ANY of them.
 
 function groupCategories(g) {
+  const known = new Set(catalogCategories.map(c => c.key));
   const keys = new Set();
-  g.items.forEach(i => i.categories.forEach(k => keys.add(k)));
+  g.items.forEach(i => i.categories.forEach(k => { if (known.has(k)) keys.add(k); }));
   return keys.size ? keys : new Set(['misc']);
 }
 
@@ -115,7 +122,7 @@ function renderFilters() {
   const box = document.getElementById('catalog-filters');
   const counts = {};
   groupModels(models).forEach(g => groupCategories(g).forEach(k => { counts[k] = (counts[k] || 0) + 1; }));
-  const cats = CONFIG.categories.filter(c => counts[c.key]);
+  const cats = catalogCategories.filter(c => counts[c.key]);
 
   if (cats.length < 2) {
     layout.classList.add('no-filters');
