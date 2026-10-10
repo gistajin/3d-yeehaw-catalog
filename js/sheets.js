@@ -19,6 +19,11 @@ const Sheets = {
     });
   },
 
+  async publicCategories() {
+    const rows = await this._call({ action: 'publicCategories' });
+    return (Array.isArray(rows) ? rows : []).map(r => ({ key: String(r.key || ''), label: String(r.label || r.key || '') })).filter(r => r.key);
+  },
+
   async publicModels(sheetName) {
     const rows = await this._call({ action: 'publicModels', tab: sheetName });
     return (Array.isArray(rows) ? rows : []).map(r => ({
